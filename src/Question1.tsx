@@ -103,24 +103,27 @@ export const UserContext =
 
 export const useUserInfo = () => useContext(UserContext);
 
-export const PHONE_BOOK_FORM_DATA_TESTID = {
-  component: "PHONE_BOOK_FORM_COMPONENT",
-  addUser: "PHONE_BOOK_FORM_ADD_USER",
-  firstName: "PHONE_BOOK_FORM_FIRST_NAME",
-  lastName: "PHONE_BOOK_FORM_LAST_NAME",
-  phoneNumber: "PHONE_BOOK_FORM_PHONE_NUMBER",
-};
+export const phoneBookFormGetDataTestID = (dataTestID: Uppercase<string>) => ({
+  root: `PHONE_BOOK_FORM_${dataTestID}`,
+  addUser: `PHONE_BOOK_FORM_ADD_USER`,
+  firstName: `PHONE_BOOK_FORM_FIRST_NAME`,
+  lastName: `PHONE_BOOK_FORM_LAST_NAME`,
+  phoneNumber: `PHONE_BOOK_FORM_PHONE_NUMBER`,
+});
 
-export function PhoneBookForm(props: { style?: React.CSSProperties }) {
+export function PhoneBookForm(props: {
+  style?: React.CSSProperties;
+  dataTestID?: Uppercase<string>;
+}) {
   const { style = {} } = props;
   const userInfo = useUserInfo();
   const { firstRef, lastRef, phoneRef } = userInfo;
-  const { component, firstName, lastName, phoneNumber, addUser } =
-    PHONE_BOOK_FORM_DATA_TESTID;
+  const { root, firstName, lastName, phoneNumber, addUser } =
+    phoneBookFormGetDataTestID(props?.dataTestID ?? "ROOT");
 
   return (
     <form
-      data-testid={component}
+      data-testid={root}
       onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         userSubmitUserInfo(userInfo);
@@ -171,25 +174,30 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
   );
 }
 
-export const INFORMATION_TABLE_DATA_TESTID = {
-  component: "INFORMATION_TABLE_COMPONENT",
-  rowIth: (id: number) => `INFORMATION_TABLE_SORTED_ROW_${id}`,
-  firstNameIth: (id: number) => `INFORMATION_TABLE_FIRST_NAME_${id}`,
-  lastNameIth: (id: number) => `INFORMATION_TABLE_LAST_NAME_${id}`,
-  phoneNumberIth: (id: number) => `INFORMATION_TABLE_PHONE_NUMBER_${id}`,
-};
+export const informationTableGetDataTestID = (
+  dataTestID: Uppercase<string>
+) => ({
+  root: `INFORMATION_TABLE_${dataTestID}`,
+  rowIth: (ith: number) => `INFORMATION_TABLE_SORTED_ROW_${ith}`,
+  firstNameIth: (ith: number) => `INFORMATION_TABLE_FIRST_NAME_${ith}`,
+  lastNameIth: (ith: number) => `INFORMATION_TABLE_LAST_NAME_${ith}`,
+  phoneNumberIth: (ith: number) => `INFORMATION_TABLE_PHONE_NUMBER_${ith}`,
+});
 
-export function InformationTable(props: { style?: React.CSSProperties }) {
+export function InformationTable(props: {
+  style?: React.CSSProperties;
+  dataTestID?: Uppercase<string>;
+}) {
   const { style = {} } = props;
   const { userInfos } = useUserInfo();
-  const { component, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
-    INFORMATION_TABLE_DATA_TESTID;
+  const { root, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
+    informationTableGetDataTestID(props?.dataTestID ?? "ROOT");
 
   return (
     <table
       style={{ ...table.table, ...style }}
       className="informationTable"
-      data-testid={component}
+      data-testid={root}
     >
       <thead>
         <tr>
@@ -217,12 +225,25 @@ export function InformationTable(props: { style?: React.CSSProperties }) {
   );
 }
 
-export function Question1() {
+const QUESTION1_STYLE: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 3fr",
+  alignItems: "flex-start",
+};
+
+export function Question1(props: { dataTestID?: Uppercase<string> }) {
+  const { dataTestID } = props;
   return (
-    <div>
+    <div data-testid={dataTestID}>
       <h3>Question 1</h3>
-      <PhoneBookForm />
-      <InformationTable />
+      <div style={QUESTION1_STYLE}>
+        <PhoneBookForm
+          dataTestID={`${dataTestID}/PHONE` as Uppercase<string>}
+        />
+        <InformationTable
+          dataTestID={`${dataTestID}/INFO` as Uppercase<string>}
+        />
+      </div>
     </div>
   );
 }

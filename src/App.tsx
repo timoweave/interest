@@ -16,18 +16,28 @@ export const RouteHeader = () => {
   );
 };
 
-export function App() {
+export const AppProvider = (props: {
+  children: React.ReactNode;
+}): JSX.Element => {
+  const { children } = props;
+
   return (
     <UserProvider>
       <UserCreditProvider>
-        <BrowserRouter>
-          <RouteHeader />
-          <Routes>
-            <Route path="1" Component={Question1} />
-            <Route path="2" Component={Question2} />
-          </Routes>
-        </BrowserRouter>
+        <BrowserRouter>{children}</BrowserRouter>
       </UserCreditProvider>
     </UserProvider>
+  );
+};
+
+export function App() {
+  return (
+    <AppProvider>
+      <RouteHeader />
+      <Routes>
+        <Route path="1" Component={Question1} />
+        <Route path="2" Component={Question2} />
+      </Routes>
+    </AppProvider>
   );
 }

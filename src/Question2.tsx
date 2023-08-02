@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useRef, useState, useEffect, createContext, useContext } from "react";
+import { fetch } from "cross-fetch";
 
 export interface UserSsn {
   id: number;
@@ -16,28 +17,40 @@ export interface UserInterestRate {
   rate: number;
 }
 
+interface FicoScoreInterestRate {
+  lowerFicoScore: number;
+  upperFicoScore: number;
+  interestRate: number;
+}
+
 function getRate(ficoScore: number): number {
-  if (ficoScore <= 0) {
+  const interestRates: FicoScoreInterestRate[] = [
+    { lowerFicoScore: 1, upperFicoScore: 100, interestRate: 0.91 },
+    { lowerFicoScore: 100, upperFicoScore: 200, interestRate: 0.857 },
+    { lowerFicoScore: 200, upperFicoScore: 300, interestRate: 0.732 },
+    { lowerFicoScore: 300, upperFicoScore: 400, interestRate: 0.633 },
+    { lowerFicoScore: 400, upperFicoScore: 500, interestRate: 0.555 },
+    { lowerFicoScore: 500, upperFicoScore: 600, interestRate: 0.489 },
+    { lowerFicoScore: 600, upperFicoScore: 700, interestRate: 0.311 },
+    { lowerFicoScore: 700, upperFicoScore: 800, interestRate: 0.123 },
+  ];
+
+  const interestRate = interestRates.reduce<number | null>(
+    (foundRate, rate) => {
+      const { lowerFicoScore, upperFicoScore, interestRate } = rate;
+      return foundRate != null
+        ? foundRate
+        : lowerFicoScore <= ficoScore && ficoScore < upperFicoScore
+        ? interestRate
+        : null;
+    },
+    null,
+  );
+
+  if (interestRate == null) {
     throw new Error("INVALID RATE");
-  } else if (1 <= ficoScore && ficoScore < 100) {
-    return 0.921;
-  } else if (100 <= ficoScore && ficoScore < 200) {
-    return 0.857;
-  } else if (200 <= ficoScore && ficoScore < 300) {
-    return 0.732;
-  } else if (300 <= ficoScore && ficoScore < 400) {
-    return 0.633;
-  } else if (400 <= ficoScore && ficoScore < 500) {
-    return 0.555;
-  } else if (500 <= ficoScore && ficoScore < 600) {
-    return 0.489;
-  } else if (600 <= ficoScore && ficoScore < 700) {
-    return 0.311;
-  } else if (700 <= ficoScore) {
-    return 0.123;
-  } else {
-    throw new Error("INVALID FICO SCORE");
   }
+  return interestRate;
 }
 
 async function saveToDb(ssn: string, rate: number): Promise<UserInterestRate> {
@@ -62,14 +75,14 @@ function fetchJSON<T>(url: string): Promise<T> {
   });
 }
 
-async function fetchAllFicoScores(): Promise<UserFicoScore[]> {
-  return fetchJSON<UserFicoScore[]>("../public/user_fico_scores.json").then(
-    (data) => data.sort((a, b) => a.id - b.id)
+async function fetchAllFicoScores(url: string): Promise<UserFicoScore[]> {
+  return fetchJSON<UserFicoScore[]>(url).then((data) =>
+    data.sort((a, b) => a.id - b.id)
   );
 }
 
-async function fetchAllSsns(): Promise<UserSsn[]> {
-  return fetchJSON<UserSsn[]>("../public/user_ssns.json").then((data) =>
+async function fetchAllSsns(url: string): Promise<UserSsn[]> {
+  return fetchJSON<UserSsn[]>(url).then((data) =>
     data.sort((a, b) => a.ssn.localeCompare(b.ssn))
   );
 }
@@ -94,15 +107,25 @@ export async function getFicoScoreBySsn(
 }
 
 export const fetchUserSnnAndFicoScore = (props: {
-  ssnUrl: string;
-  ficoScoreUrl: string;
-  setSsns: React.Dispatch<React.SetStateAction<UserSsn[]>>;
-  setFilteredSsns: React.Dispatch<React.SetStateAction<UserSsn[]>>;
-  setScores: React.Dispatch<React.SetStateAction<UserFicoScore[]>>;
+  url: {
+    ssns: string;
+    ficoScores: string;
+  };
+  state: Partial<UseUserCreditReturn>;
 }) => {
-  const promises = [fetchAllSsns(), fetchAllFicoScores()];
+  const { state, url } = props;
+  const [setSsns, setFilteredSsns, setScores] = [
+    state.setSsns,
+    state.setFilteredSsns,
+    state.setScores,
+  ];
+  if (setSsns == null || setFilteredSsns == null || setScores == null) {
+    const msg = "invalid state, must have setSsns, setFilteredSsns, setScores";
+    throw Promise.reject(msg);
+  }
+
+  const promises = [fetchAllSsns(url.ssns), fetchAllFicoScores(url.ficoScores)];
   Promise.all(promises).then(([fetchedSsns, fetchedScores]) => {
-    const { setSsns, setFilteredSsns, setScores } = props;
     setSsns(fetchedSsns as UserSsn[]);
     setFilteredSsns(fetchedSsns as UserSsn[]);
     setScores(fetchedScores as UserFicoScore[]);
@@ -120,11 +143,11 @@ export const useUserCreditContext = () => {
 
   useEffect(() => {
     fetchUserSnnAndFicoScore({
-      ssnUrl: "../public/user_ssn.json",
-      ficoScoreUrl: "../public/user_fico_scores.json",
-      setSsns,
-      setFilteredSsns,
-      setScores,
+      url: {
+        ssns: "http://localhost/user_ssns.json",
+        ficoScores: "http://localhost/user_fico_scores.json",
+      },
+      state: { setSsns, setFilteredSsns, setScores },
     });
   }, []);
 
@@ -210,33 +233,55 @@ const question2style: React.CSSProperties = {
   gridTemplateColumns: "repeat(3, 1fr)",
 };
 
-export const Question2 = (): JSX.Element => {
+export const getQuestion2DataTestID = (dataTestID: Uppercase<string>) => ({
+  root: `QUESTION2_${dataTestID}`,
+  title: `QUESTION2_TITLE_${dataTestID}`,
+  filterSsn: `QUESTION2_FILTER_SSN_${dataTestID}`,
+  selectSsn: `QUESTION2_SELECT_SSN_${dataTestID}`,
+  optionSsnIth: (ith: number) => `QUESTION2_OPTION_SSN_${dataTestID}_${ith}`,
+  rate: `QUESTION2_RATE_${dataTestID}`,
+});
+
+export const Question2 = (props?: {
+  style?: React.CSSProperties;
+  dataTestID?: Uppercase<string>;
+}): JSX.Element => {
+  const { style = {} } = props ?? {};
   const question2 = useUserCredit();
   const { selectedSsn, answer, filteredSsns } = question2;
+  const { root, title, filterSsn, selectSsn, optionSsnIth, rate } =
+    getQuestion2DataTestID(props?.dataTestID ?? "ROOT");
 
   return (
-    <div>
-      <h3>Question 2</h3>
+    <div data-testid={root} style={style}>
+      <h3 data-testid={title}>Question 2</h3>
       <div style={question2style}>
         <input
-          placeholder="Filter SSN"
+          data-testid={filterSsn}
+          placeholder="Filtering SSN"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             userCreditFilterSsns(question2, e.target.value)
           }
         ></input>
         <select
+          data-testid={selectSsn}
+          defaultValue={selectedSsn ?? ""}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             userCreditFindInterestRate(question2, e.target.value)
           }
         >
-          <option value={""}>Please choose one option</option>
-          {filteredSsns.map(({ ssn }) => (
-            <option key={ssn} value={ssn} selected={ssn === selectedSsn}>
+          <option data-testid={optionSsnIth(0)} value={""}>
+            Please choose one option
+          </option>
+          {filteredSsns.map(({ ssn }, i) => (
+            <option data-testid={optionSsnIth(i + 1)} key={ssn} value={ssn}>
               {ssn}
             </option>
           ))}
         </select>
-        <span>Rate: {answer?.rate == null ? null : answer.rate}</span>
+        <span data-testid={rate}>
+          Rate: {answer?.rate == null ? null : answer.rate}
+        </span>
       </div>
     </div>
   );
