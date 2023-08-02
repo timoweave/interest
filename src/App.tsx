@@ -1,5 +1,5 @@
 import { Question1, UserProvider } from "./Question1";
-import { Question2 } from "./Question2";
+import { Question2, Question2Provider } from "./Question2";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
 const ROUTE_HEADER_STYLE: React.CSSProperties = {
@@ -19,13 +19,15 @@ export const RouteHeader = () => {
 export function App() {
   return (
     <UserProvider>
-      <BrowserRouter>
-        <RouteHeader />
-        <Routes>
-          <Route path="1" Component={Question1} />
-          <Route path="2" Component={Question2} />
-        </Routes>
-      </BrowserRouter>
+      <Question2Provider>
+        <BrowserRouter>
+          <RouteHeader />
+          <Routes>
+            <Route path="1" Component={Question1} />
+            <Route path="2" Component={Question2} />
+          </Routes>
+        </BrowserRouter>
+      </Question2Provider>
     </UserProvider>
   );
 }

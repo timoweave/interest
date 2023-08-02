@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, createContext, useContext } from "react";
 
 export interface UserSsn {
   id: number;
@@ -62,12 +62,16 @@ function fetchJSON<T>(url: string): Promise<T> {
   });
 }
 
-function fetchAllFicoScores(): Promise<UserFicoScore[]> {
-  return fetchJSON<UserFicoScore[]>("../public/user_fico_scores.json");
+async function fetchAllFicoScores(): Promise<UserFicoScore[]> {
+  return fetchJSON<UserFicoScore[]>("../public/user_fico_scores.json").then(
+    (data) => data.sort((a, b) => a.id - b.id)
+  );
 }
 
-function fetchAllSsns(): Promise<UserSsn[]> {
-  return fetchJSON<UserSsn[]>("../public/user_ssns.json");
+async function fetchAllSsns(): Promise<UserSsn[]> {
+  return fetchJSON<UserSsn[]>("../public/user_ssns.json").then((data) =>
+    data.sort((a, b) => a.ssn.localeCompare(b.ssn))
+  );
 }
 
 export async function getFicoScoreBySsn(
@@ -105,7 +109,8 @@ export const fetchUserSnnAndFicoScore = (props: {
   });
 };
 
-export const useQuestion2 = () => {
+export const useUserCreditContext = () => {
+  const [selectedSsn, setSelectedSsn] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const ssnFilterRef = useRef<HTMLInputElement>(null);
   const [answer, setAnswer] = useState<UserInterestRate | null>(null);
@@ -124,6 +129,8 @@ export const useQuestion2 = () => {
   }, []);
 
   return {
+    selectedSsn,
+    setSelectedSsn,
     inputRef,
     ssnFilterRef,
     answer,
@@ -137,28 +144,59 @@ export const useQuestion2 = () => {
   };
 };
 
-export type UseQuestion2Return = ReturnType<typeof useQuestion2>;
+export type UseUserCreditReturn = ReturnType<typeof useUserCreditContext>;
 
-export const Question2FindInterestRate = (
-  state: UseQuestion2Return,
+export const USE_USER_CREDIT_DEFAULT: UseUserCreditReturn = {
+  selectedSsn: null,
+  setSelectedSsn: () => {},
+  inputRef: { current: null },
+  ssnFilterRef: { current: null },
+  answer: null,
+  setAnswer: () => {},
+  scores: [],
+  setScores: () => {},
+  ssns: [],
+  setSsns: () => {},
+  filteredSsns: [],
+  setFilteredSsns: () => {},
+};
+
+export const UseUserCreditContext = createContext(USE_USER_CREDIT_DEFAULT);
+
+export const UserInterestRateProvider = (props: {
+  children: React.ReactNode;
+}): JSX.Element => {
+  const { children } = props;
+  const value = useUserCreditContext();
+
+  return (
+    <UseUserCreditContext.Provider value={value}>
+      {children}
+    </UseUserCreditContext.Provider>
+  );
+};
+
+export const useUserCredit = () => useContext(UseUserCreditContext);
+
+export const userCreditFindInterestRate = (
+  state: UseUserCreditReturn,
   ssn: string
 ): void => {
-  const { ssns, scores, setAnswer } = state;
+  const { ssns, scores, setAnswer, setSelectedSsn } = state;
 
   if (ssn == null || ssns.length === 0 || scores.length === 0) {
     const issue = "must give ssn, have non-empty ssns, have non-empty scores";
     throw new Error(issue);
   }
-
+  setSelectedSsn(ssn);
   getFicoScoreBySsn(ssns, scores, ssn).then((data) => setAnswer(data));
 };
 
-export const question2FilterSsns = (
-  state: UseQuestion2Return,
+export const userCreditFilterSsns = (
+  state: UseUserCreditReturn,
   ssnPattern: string
 ) => {
   const { ssns, setFilteredSsns } = state;
-
   if (ssnPattern == null) {
     return;
   }
@@ -173,8 +211,8 @@ const question2style: React.CSSProperties = {
 };
 
 export const Question2 = (): JSX.Element => {
-  const question2 = useQuestion2();
-  const { answer, filteredSsns } = question2;
+  const question2 = useUserCredit();
+  const { selectedSsn, answer, filteredSsns } = question2;
 
   return (
     <div>
@@ -183,17 +221,17 @@ export const Question2 = (): JSX.Element => {
         <input
           placeholder="Filter SSN"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            question2FilterSsns(question2, e.target.value)
+            userCreditFilterSsns(question2, e.target.value)
           }
         ></input>
         <select
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            Question2FindInterestRate(question2, e.target.value)
+            userCreditFindInterestRate(question2, e.target.value)
           }
         >
           <option value={""}>Please choose one option</option>
           {filteredSsns.map(({ ssn }) => (
-            <option key={ssn} value={ssn}>
+            <option key={ssn} value={ssn} selected={ssn === selectedSsn}>
               {ssn}
             </option>
           ))}
