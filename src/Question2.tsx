@@ -163,7 +163,7 @@ export const USE_USER_CREDIT_DEFAULT: UseUserCreditReturn = {
 
 export const UseUserCreditContext = createContext(USE_USER_CREDIT_DEFAULT);
 
-export const UserInterestRateProvider = (props: {
+export const UserCreditProvider = (props: {
   children: React.ReactNode;
 }): JSX.Element => {
   const { children } = props;
