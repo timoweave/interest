@@ -1,4 +1,4 @@
-import { useUserContext, UserContext, Question1 } from "./Question1";
+import { Question1, UserProvider } from "./Question1";
 import { Question2 } from "./Question2";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
@@ -17,10 +17,8 @@ export const RouteHeader = () => {
 };
 
 export function App() {
-  const userInfo = useUserContext();
-
   return (
-    <UserContext.Provider value={userInfo}>
+    <UserProvider>
       <BrowserRouter>
         <RouteHeader />
         <Routes>
@@ -28,6 +26,6 @@ export function App() {
           <Route path="2" Component={Question2} />
         </Routes>
       </BrowserRouter>
-    </UserContext.Provider>
+    </UserProvider>
   );
 }

@@ -1,7 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-// brandon hawi
-// brain p
-
 import React, { useRef, useState, useContext, createContext } from "react";
 
 const table: { [key: string]: React.CSSProperties } = {
@@ -64,9 +61,18 @@ export type UseUserContextReturn = ReturnType<typeof useUserContext>;
 export const userSorterByLastName = (a: UserInfo, b: UserInfo): number =>
   a.lastName.toLowerCase().localeCompare(b.lastName.toLowerCase());
 
+export const userAddUserInfoOrderly = (
+  newUserInfo: UserInfo,
+  useInfoContext: UseUserContextReturn
+) => {
+  const { setUserInfos } = useInfoContext;
+  setUserInfos((prevUserInfos) =>
+    [...prevUserInfos, newUserInfo].sort(userSorterByLastName)
+  );
+};
+
 export const userSubmitUserInfo = (useInfoContext: UseUserContextReturn) => {
-  const userInfo = useInfoContext;
-  const { firstRef, lastRef, phoneRef, setUserInfos } = userInfo;
+  const { firstRef, lastRef, phoneRef } = useInfoContext;
 
   const [firstName, lastName, phoneNumber] = [
     firstRef.current?.value,
@@ -76,10 +82,8 @@ export const userSubmitUserInfo = (useInfoContext: UseUserContextReturn) => {
   if (firstName == null || lastName == null || phoneNumber == null) {
     return;
   }
-  const newUserInfo: UserInfo = { firstName, lastName, phoneNumber };
-  setUserInfos((prevUserInfos) =>
-    [...prevUserInfos, newUserInfo].sort(userSorterByLastName)
-  );
+
+  userAddUserInfoOrderly({ firstName, lastName, phoneNumber }, useInfoContext);
 
   firstRef.current!.value = "";
   lastRef.current!.value = "";
@@ -99,13 +103,24 @@ export const UserContext =
 
 export const useUserInfo = () => useContext(UserContext);
 
+export const PHONE_BOOK_FORM_DATA_TESTID = {
+  component: "PHONE_BOOK_FORM_COMPONENT",
+  addUser: "PHONE_BOOK_FORM_ADD_USER",
+  firstName: "PHONE_BOOK_FORM_FIRST_NAME",
+  lastName: "PHONE_BOOK_FORM_LAST_NAME",
+  phoneNumber: "PHONE_BOOK_FORM_PHONE_NUMBER",
+};
+
 export function PhoneBookForm(props: { style?: React.CSSProperties }) {
   const { style = {} } = props;
   const userInfo = useUserInfo();
   const { firstRef, lastRef, phoneRef } = userInfo;
+  const { component, firstName, lastName, phoneNumber, addUser } =
+    PHONE_BOOK_FORM_DATA_TESTID;
 
   return (
     <form
+      data-testid={component}
       onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         userSubmitUserInfo(userInfo);
@@ -115,6 +130,7 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
       <label>First name:</label>
       <br />
       <input
+        data-testid={firstName}
         ref={firstRef}
         style={form.inputs}
         className="userFirstname"
@@ -125,6 +141,7 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
       <label>Last name:</label>
       <br />
       <input
+        data-testid={lastName}
         ref={lastRef}
         style={form.inputs}
         className="userLastname"
@@ -135,6 +152,7 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
       <label>Phone:</label>
       <br />
       <input
+        data-testid={phoneNumber}
         ref={phoneRef}
         style={form.inputs}
         className="userPhone"
@@ -143,6 +161,7 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
       />
       <br />
       <input
+        data-testid={addUser}
         style={form.submitBtn}
         className="submitButton"
         type="submit"
@@ -152,12 +171,26 @@ export function PhoneBookForm(props: { style?: React.CSSProperties }) {
   );
 }
 
+export const INFORMATION_TABLE_DATA_TESTID = {
+  component: "INFORMATION_TABLE_COMPONENT",
+  rowIth: (id: number) => `INFORMATION_TABLE_SORTED_ROW_${id}`,
+  firstNameIth: (id: number) => `INFORMATION_TABLE_FIRST_NAME_${id}`,
+  lastNameIth: (id: number) => `INFORMATION_TABLE_LAST_NAME_${id}`,
+  phoneNumberIth: (id: number) => `INFORMATION_TABLE_PHONE_NUMBER_${id}`,
+};
+
 export function InformationTable(props: { style?: React.CSSProperties }) {
   const { style = {} } = props;
   const { userInfos } = useUserInfo();
+  const { component, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
+    INFORMATION_TABLE_DATA_TESTID;
 
   return (
-    <table style={{ ...table.table, ...style }} className="informationTable">
+    <table
+      style={{ ...table.table, ...style }}
+      className="informationTable"
+      data-testid={component}
+    >
       <thead>
         <tr>
           <th style={table.tableCell}>First name</th>
@@ -167,10 +200,16 @@ export function InformationTable(props: { style?: React.CSSProperties }) {
       </thead>
       <tbody>
         {userInfos.map(({ firstName, lastName, phoneNumber }, i) => (
-          <tr key={i}>
-            <td style={table.tableCell}>{firstName}</td>
-            <td style={table.tableCell}>{lastName}</td>
-            <td style={table.tableCell}>{phoneNumber}</td>
+          <tr key={i} data-testid={rowIth(i)}>
+            <td style={table.tableCell} data-testid={firstNameIth(i)}>
+              {firstName}
+            </td>
+            <td style={table.tableCell} data-testid={lastNameIth(i)}>
+              {lastName}
+            </td>
+            <td style={table.tableCell} data-testid={phoneNumberIth(i)}>
+              {phoneNumber}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -187,3 +226,11 @@ export function Question1() {
     </div>
   );
 }
+
+export const UserProvider = (props: { children: React.ReactNode }) => {
+  const { children } = props;
+  const userInfo = useUserContext();
+  return (
+    <UserContext.Provider value={userInfo}>{children}</UserContext.Provider>
+  );
+};
