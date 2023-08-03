@@ -12,8 +12,8 @@ import { act, fireEvent, render, renderHook } from "@testing-library/react";
 
 import {
   context,
-  phoneBookFormDataTestIDFromRender,
-  informationTableDataTestIDFromRender,
+  phoneBookFormDataTestIDElement,
+  informationTableDataTestIDElement,
 } from "./utils";
 
 describe("question 1", () => {
@@ -66,11 +66,8 @@ describe("question 1", () => {
 
   test("add tinker bell, and clear input", async () => {
     const rendered = render(<Question1 />, context);
-    const phoneBookForm = phoneBookFormDataTestIDFromRender(rendered, "T1");
-    const informationTable = informationTableDataTestIDFromRender(
-      rendered,
-      "T2"
-    );
+    const phoneBookForm = phoneBookFormDataTestIDElement(rendered, "T1");
+    const informationTable = informationTableDataTestIDElement(rendered, "T2");
 
     const { firstName, lastName, phoneNumber, addUser } = phoneBookForm;
     const { firstNameIth, lastNameIth, phoneNumberIth } = informationTable;
@@ -93,11 +90,8 @@ describe("question 1", () => {
 
   test("add peter pan, tinker bell, and clear input", async () => {
     const rendered = render(<Question1 dataTestID="T1" />, context);
-    const phoneBookForm = phoneBookFormDataTestIDFromRender(rendered, "T3");
-    const informationTable = informationTableDataTestIDFromRender(
-      rendered,
-      "T4"
-    );
+    const phoneBookForm = phoneBookFormDataTestIDElement(rendered, "T3");
+    const informationTable = informationTableDataTestIDElement(rendered, "T4");
 
     const { firstName, lastName, phoneNumber, addUser } = phoneBookForm;
     const { firstNameIth, lastNameIth, phoneNumberIth } = informationTable;

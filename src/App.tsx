@@ -1,3 +1,4 @@
+import { Example } from "./Example";
 import { Question1, UserProvider } from "./Question1";
 import { Question2, UserCreditProvider } from "./Question2";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
@@ -12,6 +13,7 @@ export const RouteHeader = () => {
     <div style={ROUTE_HEADER_STYLE}>
       <Link to="1">Question 1</Link>
       <Link to="2">Question 2</Link>
+      <Link to="example">Example</Link>
     </div>
   );
 };
@@ -39,6 +41,7 @@ export function App() {
       <Routes>
         <Route path="1" Component={Question1} />
         <Route path="2" Component={Question2} />
+        <Route path="example" Component={Example} />
       </Routes>
     </AppProvider>
   );

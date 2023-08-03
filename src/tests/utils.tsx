@@ -1,21 +1,21 @@
 import {
-  phoneBookFormGetDataTestID,
-  informationTableGetDataTestID,
+  phoneBookFormGetDataTestIDLabel,
+  informationTableGetDataTestIDLabel,
 } from "../Question1";
 import { AppProvider } from "../App";
 import { render } from "@testing-library/react";
-import { exampleGetDataTestID } from "../Example";
-import { question2GetDataTestID } from "../Question2";
+import { exampleGetDataTestIDLabel } from "../Example";
+import { question2GetDataTestIDLabel } from "../Question2";
 
 export const context = { wrapper: AppProvider };
 
-export const phoneBookFormDataTestIDFromRender = (
+export const phoneBookFormDataTestIDElement = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
   const { getByTestId } = rendered;
   const { root, addUser, firstName, lastName, phoneNumber } =
-    phoneBookFormGetDataTestID(dataTestID);
+    phoneBookFormGetDataTestIDLabel(dataTestID);
 
   return {
     root: () => getByTestId(root),
@@ -26,13 +26,13 @@ export const phoneBookFormDataTestIDFromRender = (
   };
 };
 
-export const informationTableDataTestIDFromRender = (
+export const informationTableDataTestIDElement = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
   const { findByTestId } = rendered;
   const { root, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
-    informationTableGetDataTestID(dataTestID);
+    informationTableGetDataTestIDLabel(dataTestID);
 
   return {
     root: () => findByTestId(root),
@@ -43,12 +43,13 @@ export const informationTableDataTestIDFromRender = (
   };
 };
 
-export const exampleGetDataTestIDFromRender = (
+export const exampleGetDataTestIDElement = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
   const { queryByTestId } = rendered;
-  const { root, noData, title, message } = exampleGetDataTestID(dataTestID);
+  const { root, noData, title, message } =
+    exampleGetDataTestIDLabel(dataTestID);
 
   return {
     root: () => queryByTestId(root),
@@ -58,13 +59,13 @@ export const exampleGetDataTestIDFromRender = (
   };
 };
 
-export const question2GetDataTestIDFromRender = (
+export const question2GetDataTestIDElement = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
   const { queryByTestId } = rendered;
   const { root, title, filterSsn, selectSsn, optionSsnIth, rate } =
-    question2GetDataTestID(dataTestID);
+    question2GetDataTestIDLabel(dataTestID);
 
   return {
     root: () => queryByTestId(root),

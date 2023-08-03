@@ -17,40 +17,43 @@ export interface UserInterestRate {
   rate: number;
 }
 
-interface FicoScoreInterestRate {
-  lowerFicoScore: number;
-  upperFicoScore: number;
-  interestRate: number;
+export interface FicoScoreInterestRate {
+  lower: number;
+  upper: number;
+  rate: number;
 }
 
-function getRate(ficoScore: number): number {
-  const interestRates: FicoScoreInterestRate[] = [
-    { lowerFicoScore: 1, upperFicoScore: 100, interestRate: 0.91 },
-    { lowerFicoScore: 100, upperFicoScore: 200, interestRate: 0.857 },
-    { lowerFicoScore: 200, upperFicoScore: 300, interestRate: 0.732 },
-    { lowerFicoScore: 300, upperFicoScore: 400, interestRate: 0.633 },
-    { lowerFicoScore: 400, upperFicoScore: 500, interestRate: 0.555 },
-    { lowerFicoScore: 500, upperFicoScore: 600, interestRate: 0.489 },
-    { lowerFicoScore: 600, upperFicoScore: 700, interestRate: 0.311 },
-    { lowerFicoScore: 700, upperFicoScore: 800, interestRate: 0.123 },
-  ];
+export const INTEREST_RATES: FicoScoreInterestRate[] = [
+  { lower: 1, upper: 100, rate: 0.91 },
+  { lower: 100, upper: 200, rate: 0.857 },
+  { lower: 200, upper: 300, rate: 0.732 },
+  { lower: 300, upper: 400, rate: 0.633 },
+  { lower: 400, upper: 500, rate: 0.555 },
+  { lower: 500, upper: 600, rate: 0.489 },
+  { lower: 600, upper: 700, rate: 0.311 },
+  { lower: 700, upper: 800, rate: 0.123 },
+];
 
-  const interestRate = interestRates.reduce<number | null>(
-    (foundRate, rate) => {
-      const { lowerFicoScore, upperFicoScore, interestRate } = rate;
+export function getRate(
+  ficoScore: number,
+  interestRates: FicoScoreInterestRate[] = INTEREST_RATES
+): number {
+  const rate = interestRates.reduce<number | null>(
+    (foundRate, interestRate) => {
+      const { lower, upper, rate } = interestRate;
       return foundRate != null
         ? foundRate
-        : lowerFicoScore <= ficoScore && ficoScore < upperFicoScore
-        ? interestRate
+        : lower <= ficoScore && ficoScore < upper
+        ? rate
         : null;
     },
-    null,
+    null
   );
 
-  if (interestRate == null) {
+  if (rate == null) {
     throw new Error("INVALID RATE");
   }
-  return interestRate;
+  return rate;
 }
 
 async function saveToDb(ssn: string, rate: number): Promise<UserInterestRate> {
@@ -94,7 +97,8 @@ async function fetchAllSsns(url: string): Promise<UserSsn[]> {
 export async function getFicoScoreBySsn(
   ssns: UserSsn[],
   scores: UserFicoScore[],
-  customerSsn: string
+  customerSsn: string,
+  interestRates: FicoScoreInterestRate[] = INTEREST_RATES
 ): Promise<UserInterestRate | null> {
   const ssn = ssns.find((ficoSsnI) => ficoSsnI.ssn === customerSsn);
   const score =
@@ -105,7 +109,7 @@ export async function getFicoScoreBySsn(
     return null;
   }
 
-  const rate = getRate(score.score);
+  const rate = getRate(score.score, interestRates);
   const inserted = await saveToDb(customerSsn, rate);
   return inserted;
 }
@@ -122,14 +126,39 @@ export const fetchUserSnnAndFicoScore = async (
   return Promise.resolve({ ssns: values[0], scores: values[1] });
 };
 
-export const useUserCreditContext = () => {
-  const [selectedSsn, setSelectedSsn] = useState<string | null>(null);
+export interface UseUserCredit {
+  selectedSsn: string | null;
+  setSelectedSsn: React.Dispatch<React.SetStateAction<string | null>>;
+  inputRef: React.RefObject<HTMLInputElement>;
+  ssnFilterRef: React.RefObject<HTMLInputElement>;
+  answer: UserInterestRate | null;
+  setAnswer: React.Dispatch<React.SetStateAction<UserInterestRate | null>>;
+  scores: UserFicoScore[];
+  setScores: React.Dispatch<React.SetStateAction<UserFicoScore[]>>;
+  ssns: UserSsn[];
+  setSsns: React.Dispatch<React.SetStateAction<UserSsn[]>>;
+  filteredSsns: UserSsn[];
+  setFilteredSsns: React.Dispatch<React.SetStateAction<UserSsn[]>>;
+}
+
+export const useUserCreditContext = (
+  init?: Partial<UseUserCredit> & {
+    interestRates: FicoScoreInterestRate[];
+  }
+): UseUserCredit => {
+  const [selectedSsn, setSelectedSsn] = useState<string | null>(
+    init?.selectedSsn ?? null
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const ssnFilterRef = useRef<HTMLInputElement>(null);
-  const [answer, setAnswer] = useState<UserInterestRate | null>(null);
-  const [scores, setScores] = useState<UserFicoScore[]>([]);
-  const [ssns, setSsns] = useState<UserSsn[]>([]);
-  const [filteredSsns, setFilteredSsns] = useState<UserSsn[]>([]);
+  const [answer, setAnswer] = useState<UserInterestRate | null>(
+    init?.answer ?? null
+  );
+  const [scores, setScores] = useState<UserFicoScore[]>(init?.scores ?? []);
+  const [ssns, setSsns] = useState<UserSsn[]>(init?.ssns ?? []);
+  const [filteredSsns, setFilteredSsns] = useState<UserSsn[]>(
+    init?.filteredSsns ?? []
+  );
 
   useEffect(() => {
     Promise.all([
@@ -142,6 +171,16 @@ export const useUserCreditContext = () => {
       setScores(scores);
     });
   }, []);
+
+  useEffect(() => {
+    if (selectedSsn == null) {
+      return;
+    }
+
+    getFicoScoreBySsn(ssns, scores, selectedSsn, init?.interestRates).then(
+      (data) => setAnswer(data)
+    );
+  }, [scores, selectedSsn, ssns, init?.interestRates]);
 
   return {
     selectedSsn,
@@ -159,9 +198,7 @@ export const useUserCreditContext = () => {
   };
 };
 
-export type UseUserCreditReturn = ReturnType<typeof useUserCreditContext>;
-
-export const USE_USER_CREDIT_DEFAULT: UseUserCreditReturn = {
+export const USE_USER_CREDIT_DEFAULT: UseUserCredit = {
   selectedSsn: null,
   setSelectedSsn: () => {},
   inputRef: { current: null },
@@ -194,23 +231,19 @@ export const UserCreditProvider = (props: {
 export const useUserCredit = () => useContext(UseUserCreditContext);
 
 export const userCreditFindInterestRate = (
-  state: UseUserCreditReturn,
+  state: UseUserCredit,
   ssn: string
 ): void => {
-  const { ssns, scores, setAnswer, setSelectedSsn } = state;
+  const { ssns, scores, setSelectedSsn } = state;
 
   if (ssn == null || ssns.length === 0 || scores.length === 0) {
     const issue = "must give ssn, have non-empty ssns, have non-empty scores";
     throw new Error(issue);
   }
   setSelectedSsn(ssn);
-  getFicoScoreBySsn(ssns, scores, ssn).then((data) => setAnswer(data));
 };
 
-export const userCreditFilterSsns = (
-  state: UseUserCreditReturn,
-  ssnPattern: string
-) => {
+export const userCreditFilterSsns = (state: UseUserCredit, ssnPattern: string) => {
   const { ssns, setFilteredSsns } = state;
   if (ssnPattern == null) {
     return;
@@ -225,7 +258,7 @@ const QUESTION2_STYLE: React.CSSProperties = {
   gridTemplateColumns: "repeat(3, 1fr)",
 };
 
-export const question2GetDataTestID = (
+export const question2GetDataTestIDLabel = (
   dataTestID: Uppercase<string>,
   prefix: string = "QUESTION2"
 ) => ({
@@ -245,7 +278,7 @@ export const Question2 = (props?: {
   const question2 = useUserCredit();
   const { selectedSsn, answer, filteredSsns } = question2;
   const { root, title, filterSsn, selectSsn, optionSsnIth, rate } =
-    question2GetDataTestID(props?.dataTestID ?? "ROOT");
+    question2GetDataTestIDLabel(props?.dataTestID ?? "ROOT");
 
   return (
     <div data-testid={root} style={style}>

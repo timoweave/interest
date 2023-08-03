@@ -103,7 +103,7 @@ export const UserContext =
 
 export const useUserInfo = () => useContext(UserContext);
 
-export const phoneBookFormGetDataTestID = (
+export const phoneBookFormGetDataTestIDLabel = (
   dataTestID: Uppercase<string>,
   prefix: string = "PHONE_BOOK_FORM"
 ) => ({
@@ -122,7 +122,7 @@ export function PhoneBookForm(props: {
   const userInfo = useUserInfo();
   const { firstRef, lastRef, phoneRef } = userInfo;
   const { root, firstName, lastName, phoneNumber, addUser } =
-    phoneBookFormGetDataTestID(props?.dataTestID ?? "ROOT");
+    phoneBookFormGetDataTestIDLabel(props?.dataTestID ?? "ROOT");
 
   return (
     <form
@@ -177,7 +177,7 @@ export function PhoneBookForm(props: {
   );
 }
 
-export const informationTableGetDataTestID = (
+export const informationTableGetDataTestIDLabel = (
   dataTestID: Uppercase<string>,
   prefix: string = "INFORMATION_TABLE"
 ) => ({
@@ -195,7 +195,7 @@ export function InformationTable(props: {
   const { style = {} } = props;
   const { userInfos } = useUserInfo();
   const { root, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
-    informationTableGetDataTestID(props?.dataTestID ?? "ROOT");
+    informationTableGetDataTestIDLabel(props?.dataTestID ?? "ROOT");
 
   return (
     <table

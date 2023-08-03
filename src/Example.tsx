@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetch } from "cross-fetch";
 
 export interface Data {
@@ -7,24 +7,37 @@ export interface Data {
   message: string;
 }
 
-export const useExample = () => {
+export const useExample = (props: { url: string }) => {
+  const { url } = props;
   const [data, setData] = useState<Data | null>(null);
+  const [title, setTitle] = useState<string | null>(null);
+  const message = useMemo<string | null>(
+    () => (data?.message == null ? null : `${data.message}(generated)`),
+    [data?.message]
+  );
 
   useEffect(() => {
-    fetch("http://localhost/api/data")
+    setTitle(data?.title == null ? null : `${data.title}(generated)`);
+  }, [data?.title]);
+
+  useEffect(() => {
+    fetch(url)
       .then((response) => response.json())
       .then((fetchedData) => {
         setData(fetchedData);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     data,
     setData,
+    title,
+    message,
   };
 };
 
-export const exampleGetDataTestID = (dataTestID: Uppercase<string>) => ({
+export const exampleGetDataTestIDLabel = (dataTestID: Uppercase<string>) => ({
   root: `EXAMPLE_${dataTestID}`,
   title: `EXAMPLE_TITLE`,
   message: `EXAMPLE_MESSAGE`,
@@ -36,8 +49,8 @@ export const Example = (props?: {
   dataTestID?: Uppercase<string>;
 }): JSX.Element => {
   const { style = {} } = props ?? {};
-  const { data } = useExample();
-  const { root, noData, title, message } = exampleGetDataTestID(
+  const { data } = useExample({ url: "http://localhost/api/data" });
+  const { root, noData, title, message } = exampleGetDataTestIDLabel(
     props?.dataTestID ?? "ROOT"
   );
 
