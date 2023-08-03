@@ -46,18 +46,24 @@ describe("example component", async () => {
     const rendered = renderHook(() =>
       useExample({ url: "http://localhost/api/data" })
     );
-    const example = () => rendered.result.current;
-    const exampleState = () => {
+    const example = () => {
       const { data, title, message } = rendered.result.current;
       return { data, title, message };
     };
 
-    expect(example().title).toEqual(null);
-    expect(example().message).toEqual(null);
+    expect(example()).toEqual({
+      data: null,
+      title: null,
+      message: null,
+    });
 
-    await waitFor(() => {});
+    const waitForOpt = { interval: 1, timeout: 2_000 };
+    await waitFor(() => {
+      expect(example().message).not.toBeNull();
+      expect(example().title).not.toBeNull();
+    }, waitForOpt);
 
-    expect(exampleState()).toEqual({
+    expect(example()).toEqual({
       data: {
         message: "Mocked response from MSW!",
         title: "GET http://localhost/api/data",
@@ -67,7 +73,7 @@ describe("example component", async () => {
     });
   });
 
-  test.skip("renderHook, with mock data hello", async () => {
+  test.skip("renderHook, with mock api/data", async () => {
     server.use(
       rest.get("http://localhost/api/data", (_req, res, ctx) => {
         res(ctx.json({ title: "greeting", message: "hello" }));
@@ -76,24 +82,26 @@ describe("example component", async () => {
     const rendered = renderHook(() =>
       useExample({ url: "http://localhost/api/data" })
     );
-    const example = () => rendered.result.current;
-    const exampleState = () => {
+    const example = () => {
       const { data, title, message } = rendered.result.current;
       return { data, title, message };
     };
 
-    expect(example().title).toEqual(null);
-    expect(example().message).toEqual(null);
-    expect(exampleState()).toEqual({
+    expect(example()).toEqual({
       data: null,
       title: null,
       message: null,
     });
 
-    await waitFor(() => {});
-    expect(exampleState()).toEqual({
+    const waitForOpt = { interval: 1, timeout: 3_000 };
+    await waitFor(() => {
+      expect(example().message).not.toBeNull();
+      expect(example().title).not.toBeNull();
+    }, waitForOpt);
+
+    expect(example()).toEqual({
       data: {
-        title: "greeting", // TBD
+        title: "greeting",
         message: "hello",
       },
       title: "greeting(generated)",

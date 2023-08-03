@@ -38,7 +38,7 @@ describe("Question2", async () => {
     const rendered = renderHook(() => useUserCreditContext(), context);
     const credit = () => rendered.result.current;
 
-    await waitFor(() => {});
+    await waitFor(() => {}, { timeout: 3_000 });
 
     expect(credit().answer).toBeNull();
     expect(credit().ssns).toEqual([]);
@@ -68,7 +68,7 @@ describe("Question2", async () => {
     expect(scores).toEqual(mockedScores);
   });
 
-  test.skip("useUserCreditContext, select ssn and find interest rate", async () => {
+  test("useUserCreditContext, select ssn and find interest rate", async () => {
     const scores = [{ id: 1, score: 363 }];
     const ssns = [{ id: 1, ssn: "999-99-3660" }];
     const interestRates = [{ lower: 300, upper: 400, rate: 0.363 }];
@@ -79,22 +79,28 @@ describe("Question2", async () => {
       const { answer, selectedSsn } = rendered.result.current;
       return { answer, selectedSsn };
     };
-
-    await waitFor(() => {});
+    const waitForOpt = { timeout: 3_000, interval: 1 };
+    await waitFor(() => {}, waitForOpt);
     expect(creditState()).toEqual({
       answer: null,
       selectedSsn: null,
     });
 
     act(() => credit().setSelectedSsn("999-99-3660"));
-    await waitFor(() => {});
+    await waitFor(() => {
+      expect(creditState().answer).not.toBeNull();
+    }, waitForOpt);
+    expect(creditState().answer?.rate).toEqual(0.363);
     expect(creditState()).toEqual({
-      answer: 0.363, // TBD
+      answer: {
+        ssn: "999-99-3660",
+        rate: 0.363,
+      },
       selectedSsn: "999-99-3660",
     });
   });
 
-  test.skip("renderHook, mock with data", async () => {
+  test("renderHook, mock with data", async () => {
     server.use(
       rest.get("http://localhost/user_ssns.json", (_req, res, ctx) => {
         return res(ctx.json([{ id: 1, ssn: "999-99-9999" }]));
@@ -105,40 +111,56 @@ describe("Question2", async () => {
     );
     const rendered = renderHook(() => useUserCredit(), context);
     const credit = () => rendered.result.current;
+    const waitForOpt = { timeout: 3_000, interval: 1 };
+    await waitFor(() => {
+      expect(credit().ssns.length).greaterThan(0);
+    }, waitForOpt);
 
-    await waitFor(() => {});
-
-    expect(credit().ssns.length).toEqual(1); // TBD
+    expect(credit().ssns.length).toEqual(1);
     expect(credit().answer).toEqual(null);
     expect(credit().selectedSsn).toEqual(null);
     expect(credit().ssns).toEqual([{ id: 1, ssn: "999-99-9999" }]);
     expect(credit().scores).toEqual([{ id: 1, score: 555 }]);
   });
 
-  test.skip("render, with mock data render", async () => {
+  test("render, with mock data render", async () => {
     server.use(
       rest.get("http://localhost/user_ssns.json", (_req, res, ctx) => {
-        return res(ctx.json([{ id: 1, ssn: "333-22-4444" }]));
+        return res(
+          ctx.json([
+            { id: 1, ssn: "333-22-0001" },
+            { id: 2, ssn: "333-22-0002" },
+          ])
+        );
       }),
       rest.get("http://localhost/user_fico_scores.json", (_req, res, ctx) => {
-        return res(ctx.json([{ id: 1, score: 765 }]));
+        return res(
+          ctx.json([
+            { id: 1, score: 765 },
+            { id: 1, score: 465 },
+          ])
+        );
       })
     );
     const rendered = render(<Question2 dataTestID="T8" />, context);
     const credit = question2GetDataTestIDElement(rendered, "T8");
 
-    await waitFor(() => {});
+    const waitForOpt = { interval: 1, timeout: 3_000 };
+    await waitFor(() => {
+      expect(credit.optionSsnIth(1)).not.toBeNull();
+      expect(credit.optionSsnIth(2)).not.toBeNull();
+    }, waitForOpt);
 
     expect(credit.title()).toHaveTextContent("Question 2");
     expect(credit.filterSsn()).toHaveValue("");
     expect(credit.selectSsn()).toHaveValue("");
 
     expect(credit.rate()).toHaveTextContent("");
-    expect(credit.optionSsnIth(0)).toHaveValue("");
     expect(credit.optionSsnIth(0)).toHaveTextContent(
       "Please choose one option"
     );
-    expect(credit.optionSsnIth(1)).not.toBeNull(); // TBD
-    expect(credit.optionSsnIth(1)).toHaveValue("333-22-4444");
+    expect(credit.optionSsnIth(0)).toHaveValue("");
+    expect(credit.optionSsnIth(1)).toHaveValue("333-22-0001");
+    expect(credit.optionSsnIth(2)).toHaveValue("333-22-0002");
   });
 });
