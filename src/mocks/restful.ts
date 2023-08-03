@@ -29,16 +29,16 @@ export const mockedSsns: UserSsn[] = [
 ];
 
 export const handlers = [
-  rest.get("http://localhost/user_fico_scores.json", (req, resp, ctx) => {
+  rest.get("http://localhost/user_fico_scores.json", (_req, resp, ctx) => {
     return resp(ctx.status(200), ctx.json(mockedScores));
   }),
-  rest.get("http://localhost/user_ssns.json", (req, resp, ctx) => {
+  rest.get("http://localhost/user_ssns.json", (_req, resp, ctx) => {
     return resp(ctx.status(200), ctx.json(mockedSsns));
   }),
-  rest.get("http://localhost/hello", (req, resp, ctx) => {
+  rest.get("http://localhost/hello", (_req, resp, ctx) => {
     return resp(ctx.status(200), ctx.json({ hello: 1 }));
   }),
-  rest.get("http://localhost/hello.json", (req, resp, ctx) => {
+  rest.get("http://localhost/hello.json", (_req, resp, ctx) => {
     return resp(ctx.status(200), ctx.json({ hello: 2 }));
   }),
 

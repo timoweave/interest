@@ -103,12 +103,15 @@ export const UserContext =
 
 export const useUserInfo = () => useContext(UserContext);
 
-export const phoneBookFormGetDataTestID = (dataTestID: Uppercase<string>) => ({
-  root: `PHONE_BOOK_FORM_${dataTestID}`,
-  addUser: `PHONE_BOOK_FORM_ADD_USER`,
-  firstName: `PHONE_BOOK_FORM_FIRST_NAME`,
-  lastName: `PHONE_BOOK_FORM_LAST_NAME`,
-  phoneNumber: `PHONE_BOOK_FORM_PHONE_NUMBER`,
+export const phoneBookFormGetDataTestID = (
+  dataTestID: Uppercase<string>,
+  prefix: string = "PHONE_BOOK_FORM"
+) => ({
+  root: `${prefix}_${dataTestID}`,
+  addUser: `${prefix}_ADD_USER`,
+  firstName: `${prefix}_FIRST_NAME`,
+  lastName: `${prefix}_LAST_NAME`,
+  phoneNumber: `${prefix}_PHONE_NUMBER`,
 });
 
 export function PhoneBookForm(props: {
@@ -175,13 +178,14 @@ export function PhoneBookForm(props: {
 }
 
 export const informationTableGetDataTestID = (
-  dataTestID: Uppercase<string>
+  dataTestID: Uppercase<string>,
+  prefix: string = "INFORMATION_TABLE"
 ) => ({
-  root: `INFORMATION_TABLE_${dataTestID}`,
-  rowIth: (ith: number) => `INFORMATION_TABLE_SORTED_ROW_${ith}`,
-  firstNameIth: (ith: number) => `INFORMATION_TABLE_FIRST_NAME_${ith}`,
-  lastNameIth: (ith: number) => `INFORMATION_TABLE_LAST_NAME_${ith}`,
-  phoneNumberIth: (ith: number) => `INFORMATION_TABLE_PHONE_NUMBER_${ith}`,
+  root: `${prefix}_${dataTestID}`,
+  rowIth: (ith: number) => `${prefix}_SORTED_ROW_${ith}`,
+  firstNameIth: (ith: number) => `${prefix}_FIRST_NAME_${ith}`,
+  lastNameIth: (ith: number) => `${prefix}_LAST_NAME_${ith}`,
+  phoneNumberIth: (ith: number) => `${prefix}_PHONE_NUMBER_${ith}`,
 });
 
 export function InformationTable(props: {

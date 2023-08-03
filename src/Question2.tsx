@@ -227,19 +227,22 @@ export const userCreditFilterSsns = (
   setFilteredSsns(ssns.filter((ssnI) => ssnI.ssn.includes(ssnPattern)));
 };
 
-const question2style: React.CSSProperties = {
+const QUESTION2_STYLE: React.CSSProperties = {
   display: "grid",
   gap: "2rem",
   gridTemplateColumns: "repeat(3, 1fr)",
 };
 
-export const getQuestion2DataTestID = (dataTestID: Uppercase<string>) => ({
-  root: `QUESTION2_${dataTestID}`,
-  title: `QUESTION2_TITLE_${dataTestID}`,
-  filterSsn: `QUESTION2_FILTER_SSN_${dataTestID}`,
-  selectSsn: `QUESTION2_SELECT_SSN_${dataTestID}`,
-  optionSsnIth: (ith: number) => `QUESTION2_OPTION_SSN_${dataTestID}_${ith}`,
-  rate: `QUESTION2_RATE_${dataTestID}`,
+export const question2GetDataTestID = (
+  dataTestID: Uppercase<string>,
+  prefix: string = "QUESTION2"
+) => ({
+  root: `${prefix}_${dataTestID}`,
+  title: `${prefix}_TITLE_${dataTestID}`,
+  filterSsn: `${prefix}_FILTER_SSN_${dataTestID}`,
+  selectSsn: `${prefix}_SELECT_SSN_${dataTestID}`,
+  optionSsnIth: (ith: number) => `${prefix}_OPTION_SSN_${dataTestID}_${ith}`,
+  rate: `${prefix}_RATE_${dataTestID}`,
 });
 
 export const Question2 = (props?: {
@@ -250,12 +253,12 @@ export const Question2 = (props?: {
   const question2 = useUserCredit();
   const { selectedSsn, answer, filteredSsns } = question2;
   const { root, title, filterSsn, selectSsn, optionSsnIth, rate } =
-    getQuestion2DataTestID(props?.dataTestID ?? "ROOT");
+    question2GetDataTestID(props?.dataTestID ?? "ROOT");
 
   return (
     <div data-testid={root} style={style}>
       <h3 data-testid={title}>Question 2</h3>
-      <div style={question2style}>
+      <div style={QUESTION2_STYLE}>
         <input
           data-testid={filterSsn}
           placeholder="Filtering SSN"

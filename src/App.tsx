@@ -24,7 +24,9 @@ export const AppProvider = (props: {
   return (
     <UserProvider>
       <UserCreditProvider>
-        <BrowserRouter>{children}</BrowserRouter>
+        <BrowserRouter>
+          <>{children}</>
+        </BrowserRouter>
       </UserCreditProvider>
     </UserProvider>
   );
