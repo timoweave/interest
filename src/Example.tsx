@@ -15,7 +15,6 @@ export const useExample = () => {
       .then((response) => response.json())
       .then((fetchedData) => {
         setData(fetchedData);
-        console.log({ hello: 123 });
       });
   }, []);
 
