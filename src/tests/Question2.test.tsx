@@ -52,8 +52,8 @@ describe("Question2", async () => {
       "http://localhost/user_ssns.json",
       "http://localhost/user_fico_scores.json"
     );
-    expect(ssns).toEqual(mockedSsns.sort(ssnSortBySsn));
-    expect(scores).toEqual(mockedScores.sort(ficoScoreSortByID));
+    expect(ssns).toEqual(mockedSsns);
+    expect(scores).toEqual(mockedScores);
   });
 
   test("mock with renderHook", async () => {
@@ -64,8 +64,8 @@ describe("Question2", async () => {
 
     expect(credit().answer).toEqual(null);
     expect(credit().selectedSsn).toEqual(null);
-    // expect(credit().ssns).toEqual(mockedSsns.sort(ssnSortBySsn));
-    // expect(credit().scores).toEqual(mockedScores.sort(ficoScoreSortByID));
+    expect(credit().ssns).toEqual(mockedSsns); // TBD
+    expect(credit().scores).toEqual(mockedScores); // TBD
   });
 
   test("mock with render", async () => {
@@ -81,7 +81,7 @@ describe("Question2", async () => {
     expect(credit.optionSsnIth(0)).toHaveTextContent(
       "Please choose one option"
     );
-    // expect(credit.optionSsnIth(1)).toHaveValue("");
-    // expect(credit.optionSsnIth(2)).toHaveValue("");
+    expect(credit.optionSsnIth(1)).toHaveValue(mockedSsns[0].ssn); // TBD
+    expect(credit.optionSsnIth(2)).toHaveValue(mockedSsns[1].ssn); // TBD
   });
 });

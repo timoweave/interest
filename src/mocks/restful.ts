@@ -1,6 +1,11 @@
 import { rest } from "msw";
 
-import { UserFicoScore, UserSsn } from "../Question2";
+import {
+  UserFicoScore,
+  UserSsn,
+  ficoScoreSortByID,
+  ssnSortBySsn,
+} from "../Question2";
 
 export const mockedScores: UserFicoScore[] = [
   { id: 1, score: 363 },
@@ -13,7 +18,7 @@ export const mockedScores: UserFicoScore[] = [
   { id: 8, score: 206 },
   { id: 9, score: 783 },
   { id: 10, score: 265 },
-];
+].sort(ficoScoreSortByID);
 
 export const mockedSsns: UserSsn[] = [
   { id: 1, ssn: "999-99-3660" },
@@ -26,7 +31,7 @@ export const mockedSsns: UserSsn[] = [
   { id: 8, ssn: "999-99-3736" },
   { id: 9, ssn: "999-99-2518" },
   { id: 10, ssn: "999-99-7413" },
-];
+].sort(ssnSortBySsn);
 
 export const mockedApiDataResponse = {
   title: `GET http://localhost/api/data`,
