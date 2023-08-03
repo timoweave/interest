@@ -29,37 +29,16 @@ export const mockedSsns: UserSsn[] = [
 ];
 
 export const handlers = [
-  // rest.get("/user_fico_scores.json", (req, resp, ctx) => {
-  //   console.log(`GET ${req.url}`);
-  //   return resp(ctx.status(200), ctx.json(mockedScores));
-  // }),
-  // rest.get("/user_ssns.json", (req, resp, ctx) => {
-  //   console.log(`GET ${req.url}`);
-  //   return resp(ctx.status(200), ctx.json(mockedSsns));
-  // }),
-  // rest.get("/hello", (req, resp, ctx) => {
-  //   console.log(`GET ${req.url}`);
-  //   return resp(ctx.status(200), ctx.json({ hello: 1 }));
-  // }),
-  // rest.get("/hello.json", (req, resp, ctx) => {
-  //   console.log(`GET ${req.url}`);
-  //   return resp(ctx.status(200), ctx.json({ hello: 2 }));
-  // }),
-
   rest.get("http://localhost/user_fico_scores.json", (req, resp, ctx) => {
-    console.log(`GET ${req.url}`);
     return resp(ctx.status(200), ctx.json(mockedScores));
   }),
   rest.get("http://localhost/user_ssns.json", (req, resp, ctx) => {
-    console.log(`GET ${req.url}`);
     return resp(ctx.status(200), ctx.json(mockedSsns));
   }),
   rest.get("http://localhost/hello", (req, resp, ctx) => {
-    console.log(`GET ${req.url}`);
     return resp(ctx.status(200), ctx.json({ hello: 1 }));
   }),
   rest.get("http://localhost/hello.json", (req, resp, ctx) => {
-    console.log(`GET ${req.url}`);
     return resp(ctx.status(200), ctx.json({ hello: 2 }));
   }),
 
