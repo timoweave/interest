@@ -2,51 +2,18 @@ import { describe, expect, test } from "vitest";
 import {
   UseUserContextReturn,
   useUserContext,
-  // UserProvider,
   userSorterByLastName,
   UserInfo,
   Question1,
-  // PHONE_BOOK_FORM_DATA_TESTID,
-  // INFORMATION_TABLE_DATA_TESTID,
   userAddUserInfoOrderly,
 } from "../Question1";
 
 import { act, fireEvent, render, renderHook } from "@testing-library/react";
 
-// const context = { wrapper: UserProvider };
-
-// const getPhoneBookFormDataTestID = (rendered: ReturnType<typeof render>) => {
-//   const { getByTestId } = rendered;
-//   const { component, addUser, firstName, lastName, phoneNumber } =
-//     PHONE_BOOK_FORM_DATA_TESTID;
-
-//   return {
-//     component: () => getByTestId(component),
-//     addUser: () => getByTestId(addUser),
-//     firstName: () => getByTestId(firstName),
-//     lastName: () => getByTestId(lastName),
-//     phoneNumber: () => getByTestId(phoneNumber),
-//   };
-// };
-
-// const getInformationTableDataTestID = (rendered: ReturnType<typeof render>) => {
-//   const { findByTestId } = rendered;
-//   const { component, rowIth, firstNameIth, lastNameIth, phoneNumberIth } =
-//     INFORMATION_TABLE_DATA_TESTID;
-
-//   return {
-//     component: () => findByTestId(component),
-//     rowIth: (i: number) => findByTestId(rowIth(i)),
-//     firstNameIth: (i: number) => findByTestId(firstNameIth(i)),
-//     lastNameIth: (i: number) => findByTestId(lastNameIth(i)),
-//     phoneNumberIth: (i: number) => findByTestId(phoneNumberIth(i)),
-//   };
-// };
-
 import {
   context,
-  getPhoneBookFormDataTestID,
-  getInformationTableDataTestID,
+  phoneBookFormDataTestIDFromRender,
+  informationTableDataTestIDFromRender,
 } from "./utils";
 
 describe("question 1", () => {
@@ -99,8 +66,11 @@ describe("question 1", () => {
 
   test("add tinker bell, and clear input", async () => {
     const rendered = render(<Question1 />, context);
-    const phoneBookForm = getPhoneBookFormDataTestID(rendered, "T1");
-    const informationTable = getInformationTableDataTestID(rendered, "T2");
+    const phoneBookForm = phoneBookFormDataTestIDFromRender(rendered, "T1");
+    const informationTable = informationTableDataTestIDFromRender(
+      rendered,
+      "T2"
+    );
 
     const { firstName, lastName, phoneNumber, addUser } = phoneBookForm;
     const { firstNameIth, lastNameIth, phoneNumberIth } = informationTable;
@@ -123,8 +93,11 @@ describe("question 1", () => {
 
   test("add peter pan, tinker bell, and clear input", async () => {
     const rendered = render(<Question1 dataTestID="T1" />, context);
-    const phoneBookForm = getPhoneBookFormDataTestID(rendered, "T3");
-    const informationTable = getInformationTableDataTestID(rendered, "T4");
+    const phoneBookForm = phoneBookFormDataTestIDFromRender(rendered, "T3");
+    const informationTable = informationTableDataTestIDFromRender(
+      rendered,
+      "T4"
+    );
 
     const { firstName, lastName, phoneNumber, addUser } = phoneBookForm;
     const { firstNameIth, lastNameIth, phoneNumberIth } = informationTable;

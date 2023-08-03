@@ -2,18 +2,14 @@ import {
   phoneBookFormGetDataTestID,
   informationTableGetDataTestID,
 } from "../Question1";
-// import {
-//   fetchUserSnnAndFicoScore,
-//   fetchUserSnnAndFicoScore,
-//   useUserCredit,
-// } from "../Question2";
 import { AppProvider } from "../App";
 import { render } from "@testing-library/react";
 import { exampleGetDataTestID } from "../Example";
+import { question2GetDataTestID } from "../Question2";
 
 export const context = { wrapper: AppProvider };
 
-export const getPhoneBookFormDataTestID = (
+export const phoneBookFormDataTestIDFromRender = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
@@ -30,7 +26,7 @@ export const getPhoneBookFormDataTestID = (
   };
 };
 
-export const getInformationTableDataTestID = (
+export const informationTableDataTestIDFromRender = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
@@ -47,17 +43,35 @@ export const getInformationTableDataTestID = (
   };
 };
 
-export const getExampleTestID = (
+export const exampleGetDataTestIDFromRender = (
   rendered: ReturnType<typeof render>,
   dataTestID: Uppercase<string>
 ) => {
-  const { getByTestId } = rendered;
+  const { queryByTestId } = rendered;
   const { root, noData, title, message } = exampleGetDataTestID(dataTestID);
 
   return {
-    root: () => getByTestId(root),
-    noData: () => getByTestId(noData),
-    title: () => getByTestId(title),
-    message: () => getByTestId(message),
+    root: () => queryByTestId(root),
+    noData: () => queryByTestId(noData),
+    title: () => queryByTestId(title),
+    message: () => queryByTestId(message),
+  };
+};
+
+export const question2GetDataTestIDFromRender = (
+  rendered: ReturnType<typeof render>,
+  dataTestID: Uppercase<string>
+) => {
+  const { queryByTestId } = rendered;
+  const { root, title, filterSsn, selectSsn, optionSsnIth, rate } =
+    question2GetDataTestID(dataTestID);
+
+  return {
+    root: () => queryByTestId(root),
+    title: () => queryByTestId(title),
+    filterSsn: () => queryByTestId(filterSsn),
+    selectSsn: () => queryByTestId(selectSsn),
+    optionSsnIth: (ith: number) => queryByTestId(optionSsnIth(ith)),
+    rate: () => queryByTestId(rate),
   };
 };

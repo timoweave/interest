@@ -28,6 +28,11 @@ export const mockedSsns: UserSsn[] = [
   { id: 10, ssn: "999-99-7413" },
 ];
 
+export const mockedApiDataResponse = {
+  title: `GET http://localhost/api/data`,
+  message: "Mocked response from MSW!",
+};
+
 export const handlers = [
   rest.get("http://localhost/user_fico_scores.json", (_req, resp, ctx) => {
     return resp(ctx.status(200), ctx.json(mockedScores));
@@ -42,13 +47,7 @@ export const handlers = [
     return resp(ctx.status(200), ctx.json({ hello: 2 }));
   }),
 
-  rest.get("http://localhost/api/data", (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        title: `GET ${req.url} `,
-        message: "Mocked response from MSW!",
-      })
-    );
+  rest.get("http://localhost/api/data", (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(mockedApiDataResponse));
   }),
 ];

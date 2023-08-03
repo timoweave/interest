@@ -75,16 +75,20 @@ function fetchJSON<T>(url: string): Promise<T> {
   });
 }
 
+export const ficoScoreSortByID = (a: UserFicoScore, b: UserFicoScore): number =>
+  a.id - b.id;
+
 async function fetchAllFicoScores(url: string): Promise<UserFicoScore[]> {
   return fetchJSON<UserFicoScore[]>(url).then((data) =>
-    data.sort((a, b) => a.id - b.id)
+    data.sort(ficoScoreSortByID)
   );
 }
 
+export const ssnSortBySsn = (a: UserSsn, b: UserSsn): number =>
+  a.ssn.localeCompare(b.ssn);
+
 async function fetchAllSsns(url: string): Promise<UserSsn[]> {
-  return fetchJSON<UserSsn[]>(url).then((data) =>
-    data.sort((a, b) => a.ssn.localeCompare(b.ssn))
-  );
+  return fetchJSON<UserSsn[]>(url).then((data) => data.sort(ssnSortBySsn));
 }
 
 export async function getFicoScoreBySsn(
@@ -106,30 +110,16 @@ export async function getFicoScoreBySsn(
   return inserted;
 }
 
-export const fetchUserSnnAndFicoScore = (props: {
-  url: {
-    ssns: string;
-    ficoScores: string;
-  };
-  state: Partial<UseUserCreditReturn>;
-}) => {
-  const { state, url } = props;
-  const [setSsns, setFilteredSsns, setScores] = [
-    state.setSsns,
-    state.setFilteredSsns,
-    state.setScores,
-  ];
-  if (setSsns == null || setFilteredSsns == null || setScores == null) {
-    const msg = "invalid state, must have setSsns, setFilteredSsns, setScores";
-    throw Promise.reject(msg);
-  }
+export const fetchUserSnnAndFicoScore = async (
+  ssns: string,
+  ficoScores: string
+): Promise<{ ssns: UserSsn[]; scores: UserFicoScore[] }> => {
+  const values = await Promise.all([
+    fetchAllSsns(ssns),
+    fetchAllFicoScores(ficoScores),
+  ]);
 
-  const promises = [fetchAllSsns(url.ssns), fetchAllFicoScores(url.ficoScores)];
-  Promise.all(promises).then(([fetchedSsns, fetchedScores]) => {
-    setSsns(fetchedSsns as UserSsn[]);
-    setFilteredSsns(fetchedSsns as UserSsn[]);
-    setScores(fetchedScores as UserFicoScore[]);
-  });
+  return Promise.resolve({ ssns: values[0], scores: values[1] });
 };
 
 export const useUserCreditContext = () => {
@@ -142,12 +132,14 @@ export const useUserCreditContext = () => {
   const [filteredSsns, setFilteredSsns] = useState<UserSsn[]>([]);
 
   useEffect(() => {
-    fetchUserSnnAndFicoScore({
-      url: {
-        ssns: "http://localhost/user_ssns.json",
-        ficoScores: "http://localhost/user_fico_scores.json",
-      },
-      state: { setSsns, setFilteredSsns, setScores },
+    Promise.all([
+      fetchAllSsns("http://localhost/user_ssns.json"),
+      fetchAllFicoScores("http://localhost/user_fico_scores.json"),
+    ]).then((values) => {
+      const [ssns, scores] = values;
+      setSsns(ssns);
+      setFilteredSsns(ssns);
+      setScores(scores);
     });
   }, []);
 
@@ -282,8 +274,11 @@ export const Question2 = (props?: {
             </option>
           ))}
         </select>
-        <span data-testid={rate}>
-          Rate: {answer?.rate == null ? null : answer.rate}
+        <span>
+          {"Rate: "}
+          <span data-testid={rate}>
+            {answer?.rate == null ? null : answer.rate}
+          </span>
         </span>
       </div>
     </div>

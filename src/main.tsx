@@ -18,7 +18,7 @@ const loadMockServiceWorker = (mockBrowserPath: string): void => {
   });
 };
 
-loadMockServiceWorker("./mock/browser.ts");
+loadMockServiceWorker("./mocks/browser.ts");
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
